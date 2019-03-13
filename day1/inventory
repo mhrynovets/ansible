@@ -1,5 +1,24 @@
-[webservers]
-webserver ansible_ssh_host=127.0.0.1 ansible_ssh_port=2022
+---
+webservers:
+  hosts:
+    webserver:
+      ansible_ssh_host: 127.0.0.1 
+      ansible_ssh_port: 2022 
+      ansble_user: devops 
+      ansible_ssh_private_key_file: devops.pem
+      ansible_python_interpreter: '/usr/bin/python3'
 
-[appservers]
-appserver ansible_ssh_host=127.0.0.1 ansible_ssh_port=2122
+appservers:
+  hosts:
+    appserver:
+      ansible_ssh_host: 127.0.0.1 
+      ansible_ssh_port: 2122 
+      ansble_user: devops 
+      ansible_ssh_private_key_file: devops.pem
+      ansible_python_interpreter: '/usr/bin/python3'
+
+#[webservers]
+#webserver ansible_ssh_host=127.0.0.1 ansible_ssh_port=2022 ansble_user=devops ansible_ssh_private_key_file=devops.pem
+
+#[appservers]
+#appserver ansible_ssh_host=127.0.0.1 ansible_ssh_port=2122  ansble_user=devops ansible_ssh_private_key_file=devops.pem
