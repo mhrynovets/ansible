@@ -1,0 +1,25 @@
+nodes = [
+  { :name => 'webserver',   :ip => '192.168.10.10', :ssh_port => '2022'},
+  { :name => 'appserver',   :ip => '192.168.10.11', :ssh_port => '2122'},
+]
+
+Vagrant.configure("2") do |config|
+  nodes.each do |node|
+    config.vm.define node[:name] do |nodeconfig|
+      nodeconfig.vm.box = "ubuntu/bionic64"
+      nodeconfig.vm.box_check_update = false
+      nodeconfig.ssh.insert_key = false
+      nodeconfig.vm.hostname = node[:name]
+      nodeconfig.vm.network :private_network, ip: node[:ip]
+      #nodeconfig.vm.network "forwarded_port", guest: 22, host: node[:ssh_port]
+      nodeconfig.vm.network :forwarded_port, guest: 22, host: node[:ssh_port], host_ip: "0.0.0.0", id: "sshAll", auto_correct: true
+      #nodeconfig.vm.network "public_network", bridge: "wlp3s0", use_dhcp_assigned_default_route: true
+      nodeconfig.vm.provision "ansible" do |ansible|
+        ansible.verbose = "v"
+        ansible.compatibility_mode = '2.0'        
+        ansible.extra_vars = { ansible_python_interpreter:"/usr/bin/python3" }
+        ansible.playbook = "devops-bootstrap.yml"
+      end
+    end
+  end
+end
