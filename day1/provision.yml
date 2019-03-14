@@ -1,0 +1,24 @@
+---
+- name: 
+  hosts: webserver
+  become: true
+  tasks:
+  - name: Debug - out host_os_family
+    debug: msg={{ ansible_os_family }}
+
+  - name: Install httpd package
+    yum: name=httpd state=latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Install apache2 package
+    apt: name=apache2 state=latest
+    when: ansible_os_family == "Debian"
+
+  - name: enabled mod_proxy
+    apache2_module: name=proxy state=present
+    notify:
+      - restart apache2
+
+  handlers:
+    - name: restart apache2
+      service: name=apache2 state=restarted
