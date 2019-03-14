@@ -18,6 +18,7 @@
         name: "{{ usrname }}"
         group: "{{ usrname }}"
         groups: sudo
+        shell: "/bin/bash"
         append: yes
 
     - name: Set authorized key taken from file
