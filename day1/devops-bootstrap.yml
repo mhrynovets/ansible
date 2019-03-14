@@ -8,18 +8,29 @@
   tasks:
  #   - name: Install python2
  #     raw: test -e /usr/bin/python || (apt -qy update && apt install -y python-minimal)
-    - name: Create group
+    - name: Create group "{{ usrname }}"
       group:
         name: "{{ usrname }}"
         state: present
-    - name: Create user
+
+    - name: Create user "{{ usrname }}"
       user: 
         name: "{{ usrname }}"
         group: "{{ usrname }}"
         groups: sudo
         append: yes
+
     - name: Set authorized key taken from file
       authorized_key:
         user: "{{ usrname }}"
         state: present
         key: "{{ lookup('file', 'devops.pub') }}"
+
+    - name: "Add user {{ usrname }} to sudo"
+      lineinfile:
+        path: "/etc/sudoers.d/{{ usrname }}"
+        line: '{{ usrname }} ALL=(ALL) NOPASSWD: ALL'
+        state: present
+        mode: 0440
+        create: yes
+        validate: 'visudo -cf %s'
