@@ -1,0 +1,22 @@
+---
+# Test for separately become
+# For this test file /root/test.txt contains "Hello root"
+- name: 
+  hosts: webserver
+  tasks:
+  - name: Debug - out host_os_family
+    debug: msg={{ ansible_os_family }}
+
+# Fail expected, ignoring
+  - name: Run a command who
+    shell: cat /root/test.txt
+    ignore_errors: yes
+    register: out1
+  - debug: var=out1.stdout_lines
+
+# Should work fine
+  - name: Run a command who with become
+    shell: cat /root/test.txt
+    become: yes
+    register: out2
+  - debug: var=out2.stdout_lines    
