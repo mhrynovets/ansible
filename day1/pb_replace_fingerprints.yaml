@@ -1,0 +1,23 @@
+---
+- name: 
+  hosts: pc
+  gather_facts: false
+  tasks:
+  - name: Removing old VMS public ssh keys
+    known_hosts:
+      name: "[{{ hostvars[item]['ansible_ssh_host'] }}]:{{ hostvars[item]['ansible_ssh_port'] }}"  
+      state: absent
+    loop: "{{ groups['vms'] }}"
+
+  - name: Scan VMS public ssh keys
+    shell: "ssh-keyscan -t ecdsa -p {{ hostvars[item]['ansible_ssh_port'] }} {{ hostvars[item]['ansible_ssh_host'] }}"
+    loop: "{{ groups['vms'] }}"
+    register: out1
+
+  - name: Adding current VMS public ssh keys
+    shell: "echo {{item.stdout}} >> ~/.ssh/known_hosts"
+    loop: "{{ out1.results }}"    
+    loop_control:
+      label: "{{ item._ansible_item_label }}"
+...
+
