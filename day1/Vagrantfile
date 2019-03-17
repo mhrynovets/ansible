@@ -1,6 +1,6 @@
 nodes = [
-  { :name => 'webserver',   :ip => '192.168.10.10', :ssh_port => '2022', :web_port => '2080'},
-  { :name => 'appserver',   :ip => '192.168.10.11', :ssh_port => '2122', :web_port => '2180'},
+  { :name => 'webserver',   :ip => '192.168.10.10', :ssh_port => '4022', :web_port => '4080', :web2_port => '4088'},
+  { :name => 'appserver',   :ip => '192.168.10.11', :ssh_port => '4122', :web_port => '4180', :web2_port => '4188'},
 ]
 
 Vagrant.configure("2") do |config|
@@ -24,3 +24,4 @@ Vagrant.configure("2") do |config|
     end
   end
 end
+
