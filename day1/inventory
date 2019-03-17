@@ -14,11 +14,11 @@ vms:
     webservers:
       hosts:
         webserver:
-          ansible_ssh_port: 2022 
+          ansible_ssh_port: 4022 
     appservers:
       hosts:
         appserver:
-          ansible_ssh_port: 2122 
+          ansible_ssh_port: 4122 
 
 # Old INI-styled definitions
 #[webservers]

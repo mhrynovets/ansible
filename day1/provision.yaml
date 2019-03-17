@@ -1,17 +1,17 @@
 ---
-- name: Provision webserver
+- name: Provision webservers
   hosts: webservers
+  tags: web
   vars:
     appsrv_ip: "{{ hostvars['appserver']['ansible_enp0s8']['ipv4']['address'] }}"
     jnk_port: 8080
-  tags: web
   tasks:
   - name: Install apache2 package
     become: true
     apt: name=apache2 state=latest   
     register: installedAps 
 
-  - name: enable apache modules ({{ item | join(', ') }})
+  - name: enable apache modules
     become: true  
     apache2_module: name={{ item }} state=present
     loop:
@@ -47,11 +47,19 @@
     notify:
     - restart apache2
 
+# just for example
   - name: copy jenkins redirect config
-    become: true
     copy:
       src: site-jenkins.tar.gz
       dest: /tmp/site-jenkins.tar.gz
+
+# just for example
+  - name: Extract site-jenkins.tar.gz into /var/lib/foo
+    become: true    
+    unarchive:
+      src: /tmp/site-jenkins.tar.gz
+      dest: /root
+      remote_src: yes
 
   handlers:
     - name: restart apache2
@@ -76,6 +84,16 @@
       url: "{{ jenkins_repo_key }}"
       state: present   
 
+#alternative addition of key file
+  - name: Download Jenkins repos signing key
+    get_url:
+      url: "{{ jenkins_repo_key }}"
+      dest: /tmp/jenkins-apt-repo.key
+      mode: 0440
+  - name: Install downloaded Jenkins repos signing key
+    become: true
+    command: "apt-key add /tmp/jenkins-apt-repo.key"
+
   - name: Adding Jenkins repos
     become: true 
     apt_repository:
@@ -84,11 +102,13 @@
       filename: jenkins 
 
   - name: Create Jenkins group
+    become: true 
     group:
       name: "{{ jenkins_user }}"
       state: present
 
   - name: Create Jenkins user
+    become: true 
     user:
       name: "{{ jenkins_user }}"
       group: "{{ jenkins_user }}"
@@ -115,12 +135,14 @@
       line: "HTTP_PORT={{ jenkins_port }}"
 
   - name: Set JENKINS_HOME
+    become: true  
     lineinfile:
       dest: /etc/default/jenkins
       line: "JENKINS_HOME={{ jenkins_home }}"
       regexp: '^JENKINS_HOME='
 
   - name: Start service Jenkins, if not started
+    become: true  
     service:
       name: jenkins
       state: started
