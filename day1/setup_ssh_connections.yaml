@@ -3,6 +3,11 @@
   hosts: pc
   gather_facts: false
   tasks:
+  - name: Fix devops.pem permission after Git
+    file:
+      path: devops.pem 
+      mode: 0600
+
   - name: Removing old VMS public ssh keys
     known_hosts:
       name: "[{{ hostvars[item]['ansible_ssh_host'] }}]:{{ hostvars[item]['ansible_ssh_port'] }}"  
