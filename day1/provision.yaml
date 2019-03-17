@@ -1,0 +1,143 @@
+---
+- name: Provision webserver
+  hosts: webservers
+  vars:
+    appsrv_ip: "{{ hostvars['appserver']['ansible_enp0s8']['ipv4']['address'] }}"
+    jnk_port: 8080
+  tags: web
+  tasks:
+  - name: Install apache2 package
+    become: true
+    apt: name=apache2 state=latest   
+    register: installedAps 
+
+  - name: enable apache modules ({{ item | join(', ') }})
+    become: true  
+    apache2_module: name={{ item }} state=present
+    loop:
+      - proxy
+      - headers
+      - proxy_http
+    notify:
+      - restart apache2
+
+  - name: Installing proxy config to Jenkins
+    become: true
+    template:
+      src: files/jenkins.j2
+      dest: /etc/apache2/sites-available/jenkins.conf
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Disabling all webhosts
+    become: true
+    command: "a2dissite *"
+    args:
+      removes: /etc/apache2/sites-enabled/*
+    when: installedAps.changed
+    notify:
+    - restart apache2
+
+  - name: Enable Jenkins webhost proxy
+    become: true
+    command: "a2ensite jenkins"
+    args:
+      creates: /etc/apache2/sites-enabled/jenkins.conf
+    notify:
+    - restart apache2
+
+  - name: copy jenkins redirect config
+    become: true
+    copy:
+      src: site-jenkins.tar.gz
+      dest: /tmp/site-jenkins.tar.gz
+
+  handlers:
+    - name: restart apache2
+      become: true    
+      service: name=apache2 state=restarted
+
+
+#### Play for appserver
+- name: Provision appserver
+  hosts: appserver
+  tags: app
+  vars: 
+    - jenkins_repo_key: https://pkg.jenkins.io/debian/jenkins.io.key
+    - jenkins_repo: deb http://pkg.jenkins.io/debian-stable binary/
+    - jenkins_port: 8080
+    - jenkins_user: jenkins
+    - jenkins_home: /var/lib/jenkins
+  tasks:
+  - name: Adding Jenkins repos signing key
+    become: true  
+    apt_key:
+      url: "{{ jenkins_repo_key }}"
+      state: present   
+
+  - name: Adding Jenkins repos
+    become: true 
+    apt_repository:
+      repo: "{{ jenkins_repo }}"
+      state: present
+      filename: jenkins 
+
+  - name: Create Jenkins group
+    group:
+      name: "{{ jenkins_user }}"
+      state: present
+
+  - name: Create Jenkins user
+    user:
+      name: "{{ jenkins_user }}"
+      group: "{{ jenkins_user }}"
+      home: "{{ jenkins_home }}"
+      shell: "/bin/false"
+      state: present
+
+  - name: Install OS packages
+    become: true  
+    apt:  
+      name: "{{ item }}"
+      force: yes
+      update_cache: yes
+    loop:
+      - openjdk-8-jdk
+      - jenkins
+    register: installationState
+
+  - name: Set Jenkins port
+    become: true  
+    lineinfile:
+      dest: /etc/default/jenkins
+      regexp: '^HTTP_PORT='
+      line: "HTTP_PORT={{ jenkins_port }}"
+
+  - name: Set JENKINS_HOME
+    lineinfile:
+      dest: /etc/default/jenkins
+      line: "JENKINS_HOME={{ jenkins_home }}"
+      regexp: '^JENKINS_HOME='
+
+  - name: Start service Jenkins, if not started
+    service:
+      name: jenkins
+      state: started
+      enabled: yes
+
+  - name: Sleep for 30 seconds and continue with play
+    wait_for: timeout=30
+    delegate_to: localhost
+    when: installationState.changed
+
+  - name: Parse init password jenkins
+    become: true    
+    tags: initkey
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    changed_when: false
+    register: jnkInitPass
+
+  - name: Print init password jenkins
+    tags: initkey
+    debug: var=jnkInitPass.stdout      
