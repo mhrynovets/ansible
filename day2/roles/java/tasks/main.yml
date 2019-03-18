@@ -1,0 +1,24 @@
+---
+# file: main.yml (tasks-java-roles)
+- name: Define java_packages.
+  set_fact:
+    java_packages: "{{ def_java_packages | list }}"
+  when: java_packages is not defined
+
+- name: Install Java packages
+  become: true
+  apt: 
+    name: "{{ java_packages }}"
+    state: latest 
+    install_recommends: no
+    update_cache: true
+
+# Environment setup.
+- name: Set JAVA_HOME if configured
+  become: true
+  lineinfile:
+    path: /etc/environment
+    state: present
+    regexp: '^JAVA_HOME'
+    line: 'JAVA_HOME={{ java_home }}'
+  when: java_home is defined and java_home

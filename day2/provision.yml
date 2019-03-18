@@ -16,4 +16,6 @@
   tags: web
   roles:
     - devops_user  
+    - httpd
+    - java
   

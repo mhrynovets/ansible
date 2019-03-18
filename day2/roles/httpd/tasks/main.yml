@@ -1,25 +1,27 @@
 ---
 # file: main.yml (tasks-httpd-roles)
-- name: Updates apt cache
-  apt: 
-    update_cache: true
+- name: Define httpd_packages
+  set_fact:
+    httpd_packages: "{{ def_httpd_packages | list }}"
+  when: httpd_packages is not defined
+
+- name: Define httpd_modules
+  set_fact:
+    httpd_modules: "{{ def_httpd_modules | list }}"
+  when: httpd_modules is not defined
 
 - name: Install OS packages
   become: true
   apt: 
-    name: "{{ item }}"
+    name: "{{ httpd_packages }}"
     state: latest  
-  loop:
-    - apache2 
+    update_cache: true    
 
-- name: enable apache modules
+- name: Enable apache modules
   become: true  
   apache2_module: 
     name: "{{ item }}"
     state: present  
-  loop:
-    - proxy
-    - headers
-    - proxy_http
+  loop: "{{ httpd_modules }}"
   notify:
     - restart apache2

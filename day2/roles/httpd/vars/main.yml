@@ -1,0 +1,9 @@
+---
+# file: main.yml (vars-httpd-roles)
+
+# uncomment below to set another package or version
+#httpd_packages:
+#  - apache2
+
+#httpd_modules:
+#  - proxy
