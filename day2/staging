@@ -1,0 +1,16 @@
+---
+local:
+  hosts:
+    pc:
+      ansible_connection: local
+
+# vars: in dir 'group_vars' and 'host_vars'
+vms:
+  children:
+    webservers:
+      hosts:
+        webserver:
+    appservers:
+      hosts:
+        appserver:
+           

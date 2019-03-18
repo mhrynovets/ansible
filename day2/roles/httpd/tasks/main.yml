@@ -1,0 +1,25 @@
+---
+# file: main.yml (tasks-httpd-roles)
+- name: Updates apt cache
+  apt: 
+    update_cache: true
+
+- name: Install OS packages
+  become: true
+  apt: 
+    name: "{{ item }}"
+    state: latest  
+  loop:
+    - apache2 
+
+- name: enable apache modules
+  become: true  
+  apache2_module: 
+    name: "{{ item }}"
+    state: present  
+  loop:
+    - proxy
+    - headers
+    - proxy_http
+  notify:
+    - restart apache2

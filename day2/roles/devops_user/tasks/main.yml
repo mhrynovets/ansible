@@ -1,0 +1,34 @@
+---
+# file: main.yml (tasks-devops_user-roles)
+- name: Create group "{{ user_name }}"
+  become: true
+  group:
+    name: "{{ user_name }}"
+    state: present
+
+- name: Create user "{{ user_name }}"
+  become: true
+  user: 
+    name: "{{ user_name }}"
+    group: "{{ user_name }}"
+    groups: sudo
+    shell: "/bin/bash"
+    append: yes
+
+- name: Set authorized key taken from file
+  become: true
+  no_log: True
+  authorized_key:
+    user: "{{ user_name }}"
+    state: present
+    key: "{{ lookup('file', devops_public_ssh_key) }}"
+
+- name: Add user {{ user_name }} to sudo
+  become: true
+  lineinfile:
+    path: "/etc/sudoers.d/{{ user_name }}"
+    line: '{{ user_name }} ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'

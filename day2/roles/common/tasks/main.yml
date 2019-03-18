@@ -1,0 +1,7 @@
+---
+# file: main.yml (tasks-common-roles)
+- name: Upgrade all packages to the latest version
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes    

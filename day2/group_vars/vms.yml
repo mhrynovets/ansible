@@ -1,0 +1,5 @@
+---
+# file: vms.yml
+ansible_python_interpreter: '/usr/bin/python3'
+devops_private_ssh_key: files/devops.pem
+devops_public_ssh_key: files/devops.pub
