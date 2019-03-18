@@ -38,6 +38,20 @@
   - name: Save connection host (HOST)
     delegate_to: localhost
     lineinfile :
-      line: "ansible_ssh_host: 127.0.0.1"
+      line: "ansible_ssh_host: {{ ansible_ssh_host }}"
       path: host_vars/{{ inventory_hostname }}.yml
 
+  - name: Removing old public ssh keys
+    delegate_to: localhost
+    known_hosts:
+      name: "[{{ ansible_ssh_host }}]:{{ direct_ssh_port }}"  
+      state: absent
+
+  - name: Scan public ssh keys
+    delegate_to: localhost
+    shell: "ssh-keyscan -t ecdsa -p {{ direct_ssh_port }} {{ ansible_ssh_host }}"
+    register: out1
+
+  - name: Adding current VMS public ssh keys
+    delegate_to: localhost
+    shell: "echo {{out1.stdout}} >> ~/.ssh/known_hosts"
