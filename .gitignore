@@ -2,3 +2,4 @@
 *.log
 *.retry
 del/
+day2/host_vars/*.yml

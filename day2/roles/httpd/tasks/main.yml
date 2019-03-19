@@ -25,3 +25,11 @@
   loop: "{{ httpd_modules }}"
   notify:
     - restart apache2
+
+- import_tasks: forward_jenkins.yml
+
+- name: Check apache2 is running
+  become: true    
+  service: 
+    name: apache2
+    state: started

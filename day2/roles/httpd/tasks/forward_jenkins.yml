@@ -1,0 +1,56 @@
+---
+# file: forward_jenkins.yml (tasks-httpd-roles)
+- name: Get appserver vars
+  no_log: True
+  include_vars:
+    file: host_vars/appserver.yml
+    name: app_vars
+  register: read_vars_result
+
+- name: Can not read appserver vars, stop.
+  action: fail msg="Can not read appserver vars. Please check deployment of appserver before re-running the playbook."
+  when: read_vars_result.failed
+
+- name: Parsing appserver vars
+  set_fact:
+     appsrv_ip: "{{ app_vars.ansible_private_ip }}"
+     jnk_port: 8080
+
+- name: Installing proxy config to Jenkins
+  become: true
+  template:
+    src: jenkins.j2
+    dest: /etc/apache2/sites-available/jenkins.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure Apache2 to listen 8080
+  become: true
+  lineinfile :
+    line: "Listen 8080"
+    path: /etc/apache2/ports.conf
+
+- name: Enable Jenkins webhost proxy
+  become: true
+  command: "a2ensite jenkins"
+  args:
+    creates: /etc/apache2/sites-enabled/jenkins.conf
+  notify:
+  - restart apache2
+
+- name: Apache | Check the apache configuration
+  become: true
+  command: apache2ctl configtest
+  register: apache_result
+  changed_when: False  
+  ignore_errors: yes
+
+- name: Apache | Reverting - Disable new site
+  become: true
+  command: "a2dissite jenkins"
+  when: apache_result.failed
+
+- name: Apache | Reverting changes - Ending playbook
+  action: fail msg="Apache configuration is invalid. Please check before re-running the playbook."
+  when: apache_result.failed

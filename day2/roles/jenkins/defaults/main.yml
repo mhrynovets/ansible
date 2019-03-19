@@ -1,0 +1,7 @@
+---
+# file: main.yml (defaults-jenkins-roles)
+jenkins_user: jenkins
+jenkins_home: /var/lib/{{ jenkins_user }}
+jenkins_gid: 1239
+jenkins_uid: 1239
+jenkins_version: latest

@@ -7,3 +7,5 @@ def_httpd_modules:
   - proxy
   - headers
   - proxy_http
+
+jnk_port: 8080

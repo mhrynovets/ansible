@@ -6,4 +6,4 @@ java_packages:
   - openjdk-8-jdk
 
 # uncomment below to define JAVA_HOME
-java_home: "ddd"
+#java_home: ""
