@@ -46,3 +46,10 @@
     regexp: '^ansible_user:'
     state: absent  
     path: host_vars/{{ inventory_hostname }}.yml
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

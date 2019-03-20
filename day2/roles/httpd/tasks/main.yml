@@ -33,3 +33,11 @@
   service: 
     name: apache2
     state: started
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes
+

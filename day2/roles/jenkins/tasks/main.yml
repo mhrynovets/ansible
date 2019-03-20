@@ -57,7 +57,8 @@
     daemon_reload: yes    
 
 - name: Sleep for 30 seconds and continue with play
-  wait_for: timeout=30
+  wait_for: 
+    timeout: 30
   delegate_to: localhost
 
 - name: Parse init password jenkins
@@ -69,4 +70,12 @@
 
 - name: Print init password jenkins
   tags: initkey
-  debug: var=jnkInitPass.stdout    
+  debug: 
+    var: jnkInitPass.stdout    
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

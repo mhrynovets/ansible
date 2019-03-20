@@ -22,3 +22,10 @@
     regexp: '^JAVA_HOME'
     line: 'JAVA_HOME={{ java_home }}'
   when: java_home is defined and java_home
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

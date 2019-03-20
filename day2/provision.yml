@@ -11,25 +11,34 @@
         path: "{{ devops_private_ssh_key }}"
         mode: 0600
 
+
+
 - name: Provision webservers
   hosts: webservers
   tags: web
   pre_tasks:
     - shell: echo 'I":" Beginning to configure web server..'
+      changed_when: false
   roles:
+    - common
     - devops_user  
     - httpd
   post_tasks:
-     - shell: echo 'I":" Done configuring web server..'
+    - shell: echo 'I":" Done configuring web server..'
+      changed_when: false
+
 
 - name: Provision appservers
   hosts: appservers
   tags: app
   pre_tasks:
-  - shell: echo 'I":" Beginning to configure app server..'
+    - shell: echo 'I":" Beginning to configure app server..'
+      changed_when: false
   roles:
+    - common
     - devops_user  
     - java
     - jenkins
   post_tasks:
-     - shell: echo 'I":" Done configuring app server..'  
+    - shell: echo 'I":" Done configuring app server..'  
+      changed_when: false
