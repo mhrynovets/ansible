@@ -1,0 +1,4 @@
+---
+# file: main.yml (defaults-java-roles)
+def_java_packages:
+  - openjdk-8-jdk

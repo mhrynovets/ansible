@@ -1,0 +1,5 @@
+---
+# file: main.yml (handlers-httpd-roles)
+- name: restart apache2
+  become: true    
+  service: name=apache2 state=restarted

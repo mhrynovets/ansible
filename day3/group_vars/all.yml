@@ -1,0 +1,3 @@
+---
+# file: all.yml
+jenkins_port: 8080

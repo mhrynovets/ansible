@@ -1,0 +1,9 @@
+---
+# file: main.yml (vars-java-roles)
+
+# uncomment below to set another package or version
+java_packages:
+  - openjdk-8-jdk
+
+# uncomment below to define JAVA_HOME
+#java_home: ""

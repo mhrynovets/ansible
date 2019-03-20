@@ -1,0 +1,81 @@
+---
+# file: main.yml (tasks-jenkins-roles)
+- name: Create Jenkins group
+  become: true 
+  group:
+    name: "{{ jenkins_user }}"
+    gid: "{{ jenkins_gid }}"
+    state: present
+
+- name: Create Jenkins user
+  become: true 
+  user:
+    name: "{{ jenkins_user }}"
+    group: "{{ jenkins_user }}"
+    home: "{{ jenkins_home }}"
+    uid: "{{ jenkins_uid }}"
+    shell: "/bin/false"
+    state: present
+
+- name: Create Jenkins home directory
+  become: yes
+  become_user: "{{ jenkins_user }}"
+  file:
+    path: "{{ jenkins_home }}"
+    state: directory
+    mode: 0775
+
+- name: Download Jenkins WAR file
+  become: yes
+  become_user: "{{ jenkins_user }}"
+  get_url:
+    url: http://mirrors.jenkins.io/war-stable/{{ jenkins_version }}/jenkins.war
+    dest: "{{ jenkins_home }}/jenkins.war"
+    mode: 0755
+
+- name: Copy Jenkins config file
+  become: yes
+  become_user: "{{ jenkins_user }}"
+  copy:
+    src: config
+    dest: "{{ jenkins_home }}/config"
+    mode: 0644
+
+- name: Create Jenkins daemon
+  become: true
+  template:
+    src: jenkins.service.j2
+    dest: /etc/systemd/system/jenkins.service
+    mode: 0644
+
+- name: Start Jenkins daemon
+  become: true
+  systemd:
+    name: jenkins
+    state: started
+    enabled: yes
+    daemon_reload: yes    
+
+- name: Sleep for 30 seconds and continue with play
+  wait_for: 
+    timeout: 30
+  delegate_to: localhost
+
+- name: Parse init password jenkins
+  become: true    
+  tags: initkey
+  shell: cat {{ jenkins_home }}/.jenkins/secrets/initialAdminPassword
+  changed_when: false
+  register: jnkInitPass
+
+- name: Print init password jenkins
+  tags: initkey
+  debug: 
+    var: jnkInitPass.stdout    
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

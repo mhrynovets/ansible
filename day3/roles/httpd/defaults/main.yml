@@ -1,0 +1,11 @@
+---
+# file: main.yml (defaults-httpd-roles)
+def_httpd_packages:
+  - apache2
+
+def_httpd_modules:
+  - proxy
+  - headers
+  - proxy_http
+
+jnk_port: 8080

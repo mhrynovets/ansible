@@ -1,0 +1,30 @@
+---
+# file: main.yml (tasks-common-roles)
+- name: Upgrade all packages to the latest version
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+  when: prod|default(False)
+#when var 'prod' will be set
+
+- name: Prepare custom facts directory
+  become: true
+  file:
+    path: /etc/ansible/facts.d
+    recurse: yes
+    state: directory
+
+- name: Create provision facts file
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "[general]"
+    create: yes 
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

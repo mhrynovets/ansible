@@ -1,0 +1,15 @@
+[Unit]
+Description=Jenkins daemon
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+EnvironmentFile={{ jenkins_home }}/config
+ExecStart=/usr/bin/java ${JENKINS_JAVA_OPTIONS}-jar {{ jenkins_home }}/jenkins.war --httpPort=${JENKINS_PORT} ${JENKINS_ARGS}
+Restart=always
+User={{ jenkins_user }}
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+<VirtualHost *:8080>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/html
+
+  ProxyPass         / http://{{ appsrv_ip }}:{{ jnk_port }}/ nocanon
+  ProxyPassReverse  / http://{{ appsrv_ip }}:{{ jnk_port }}/
+  ProxyRequests     Off
+  AllowEncodedSlashes NoDecode
+
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+  ErrorLog ${APACHE_LOG_DIR}/httpd-proxy-error.log
+  CustomLog ${APACHE_LOG_DIR}/httpd-proxy-access.log combined
+</VirtualHost>
+
+
+
+
+
+
+
