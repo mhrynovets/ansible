@@ -1,0 +1,51 @@
+---
+# file: main.yml (tasks-adduser-roles)
+- name: Create group "{{ user._group | default(user._name) | default("")  }}"
+  become: true 
+  group:
+    name: "{{ user._group | default(user._name) }}"
+    gid: "{{ user._gid if user._gid is number else omit }}"
+    state: present
+  when: user._group is string or user._name is string
+
+- name: Create user "{{ user._name }}"
+  become: true 
+  user:
+    name: "{{ user._name }}"
+    group: "{{ user._group if user._group is string else user._name }}"
+    groups: "{{ omit if user._groups is not defined else user._groups | join(',') }}"
+    uid: "{{ user._uid if user._uid is number else omit }}"
+    home: "{{ user._home if user._home is string else omit }}"
+    create_home: "{{ user._create_home if user._create_home is defined and user._create_home | bool else omit }}"
+    shell: "{{ user._shell if user._shell is string else omit }}"
+    state: present
+  when: user._name is string
+
+- name: Set authorized keys taken from file list
+  become: true
+  #no_log: True
+  authorized_key:
+    user: "{{ user._name }}"
+    state: present
+    key: "{{ lookup('file', item ) }}"
+  loop:
+    "{{ user._authorized_keys if user._authorized_keys is defined and user._name is string else [] }}"
+
+- name: Add custom sudoers privileges
+  become: true
+  lineinfile:
+    path: "/etc/sudoers.d/{{ user._name }}"
+    line: "{{ user._sudoline }}"
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  when: user._sudoline is string
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "user_{{ user._name }}=added"
+    create: yes
+

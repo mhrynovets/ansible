@@ -15,13 +15,22 @@
 - name: Provision webservers
   hosts: webservers
   tags: web
+  vars:
+    user2: 
+      _name: "devops"
+      _authorized_keys: ["files/devops.pub"]
+      _groups: ["sudo"]
+      _shell: "/bin/bash"
+      _sudoline: "devops ALL=(ALL) NOPASSWD: ALL"  
   pre_tasks:
     - shell: echo 'I":" Beginning to configure web server..'
       changed_when: false
   roles:
     - common
-    - devops_user  
-    - httpd
+    - role: adduser
+      vars:
+        user: "{{ user2 }}"
+#    - httpd
   post_tasks:
     - shell: echo 'I":" Done configuring web server..'
       changed_when: false
