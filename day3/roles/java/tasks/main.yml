@@ -1,8 +1,36 @@
 ---
 # file: main.yml (tasks-java-roles)
+- name: Check existence custom facts directory
+  become: true
+  file:
+    path: /etc/ansible/facts.d
+    recurse: yes
+    state: directory
+  when: ansible_local.provision.general.java is not defined
+
+- name: Insert custom fact file
+  become: true
+  copy:
+    src: java.sh
+    dest: /etc/ansible/facts.d/java.fact
+    mode: 0755
+  when: ansible_local.provision.general.java is not defined
+
+- name: Reload facts from host
+  setup: filter=ansible_local
+  when: ansible_local.provision.general.java is not defined
+  
 - name: Installing choosed Java versions
   include_tasks: java_install.yml
   loop:
     "{{ java_packages }}"
   loop_control:
     loop_var: getjava
+  when: java_basedir+"/"+java_urls[getjava].name+"/bin/java" not in ansible_local.java.installed_java
+
+- name: Add provisioning state to facts
+  become: true
+  lineinfile:
+    dest: /etc/ansible/facts.d/provision.fact
+    line: "{{ role_name }}=provisioned"
+    create: yes

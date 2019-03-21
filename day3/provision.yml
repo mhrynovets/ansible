@@ -22,31 +22,46 @@
       _groups: ["sudo"]
       _shell: "/bin/bash"
       _sudoline: "devops ALL=(ALL) NOPASSWD: ALL"  
+
   pre_tasks:
-    - shell: echo 'I":" Beginning to configure web server..'
+    - name: Some pre_tasks
+      shell: echo 'I":" Beginning to configure web server..'
+      delegate_to: localhost
       changed_when: false
+
   roles:
     - common
     - role: adduser
       vars:
         user: "{{ user2 }}"
-#    - httpd
+    - httpd
+
   post_tasks:
-    - shell: echo 'I":" Done configuring web server..'
+    - name: Some post_tasks
+      shell: echo 'I":" Done configuring web server..'
+      delegate_to: localhost
       changed_when: false
 
 
 - name: Provision appservers
   hosts: appservers
   tags: app
+
   pre_tasks:
-    - shell: echo 'I":" Beginning to configure app server..'
+    - name: Some pre_tasks
+      shell: echo 'I":" Beginning to configure app server..'
       changed_when: false
+      delegate_to: localhost
+
   roles:
     - common
     - devops_user  
     - java
     - jenkins
+    
   post_tasks:
-    - shell: echo 'I":" Done configuring app server..'  
+    - name: Some post_tasks
+      shell: echo 'I":" Done configuring app server..'  
       changed_when: false
+      delegate_to: localhost
+

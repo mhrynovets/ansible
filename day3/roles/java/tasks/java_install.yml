@@ -1,6 +1,6 @@
 ---
 # file: java_install.yml (tasks-java-roles)
-- name: Download JDK tarball
+- name: "Installer: Download JDK tarball {{ java_urls[getjava].name }}"
   tags:
     - debug
   get_url:
@@ -11,11 +11,12 @@
   register: gotTarball
   ignore_errors: yes
 
-- fail:
+- name: "Installer: Stop if failed download {{ java_urls[getjava].name }}"
+  fail:
     msg: Can not download {{ java_urls[getjava].name }}
   when: gotTarball.failed
 
-- name: Check Java base directory exists
+- name: "Installer: Check Java base directory exists"
   tags:
     - debug
   become: true
@@ -24,7 +25,7 @@
     state: directory
   when: not gotTarball.failed
 
-- name: Unarchive JDK tarball
+- name: "Installer: Unarchive JDK tarball"
   become: true
   tags:
     - debug
@@ -43,25 +44,33 @@
 #      shell: echo "PATH=$PATH:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/bin:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/db/bin:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/jre/bin" > /etc/environment
 #      when: gotPath.stdout.find(java_urls['jdk-8u201'].basedir) != -1
 
-- name: Add Java alternatives
+- name: "Installer: Add Java alternatives"
   become: true    
   alternatives:
     name: "{{ item }}"
     link: "/usr/bin/{{ item }}"
-    path: "{{ java_basedir }}/{{ java_urls[getjava].basedir | default(java_urls[getjava].name) }}/bin/{{ item }}"
+    path: "{{ java_basedir }}/{{ java_urls[getjava].name }}/bin/{{ item }}"
   loop:
     - 'java'
     - 'javac'
     - 'jar'
   when: not gotTarball.failed
 
-- name: Get current Java version
+- name: "Installer: Get current Java version"
   shell: java -version 2>&1 | awk -F '"' '/version/ {print $2}'
   changed_when: false
   register: javaVersion
   when: not gotTarball.failed
 
-- name: Output current Java verion
+- name: "Installer: Output current Java verion"
   debug: 
     msg: "Installed Java verion : {{ javaVersion.stdout }}"
-  when: not gotTarball.failed    
+  when: not gotTarball.failed
+
+- name: "Installer: Fail if versions mismatch"
+  fail:
+    msg: |
+      Version mismatch 
+      should be {{ java_urls[getjava].expected_version }}
+      got value {{ javaVersion.stdout }}
+  when: javaVersion.stdout != java_urls[getjava].expected_version
