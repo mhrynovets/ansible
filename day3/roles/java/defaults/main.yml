@@ -1,4 +1,12 @@
 ---
 # file: main.yml (defaults-java-roles)
-def_java_packages:
-  - openjdk-8-jdk
+java_urls:
+  "jdk-8u201": 
+    name: "jdk-8u201"
+    url: "https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz"
+  "jdk-12":
+    name: "jdk-12"
+    url: "https://download.oracle.com/otn-pub/java/jdk/12+33/312335d836a34c7c8bba9d963e26dc23/jdk-12_linux-x64_bin.tar.gz"
+  "jdk-11":
+    name: "jdk-11"
+    url: "http://download.oracle.com/otn-pub/java/jdk/11.0.2+9/f51449fcd52f4d52b93a989c5c56ed3c/jdk-11.0.2_linux-x64_bin.tar.gz"
