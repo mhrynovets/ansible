@@ -1,0 +1,67 @@
+---
+# file: java_install.yml (tasks-java-roles)
+- name: Download JDK tarball
+  tags:
+    - debug
+  get_url:
+    url:     "{{ java_urls[getjava].url }}"
+    headers: 
+      Cookie: oraclelicense=a
+    dest:    /tmp/{{ java_urls[getjava].name }}-linux-x64.tar.gz
+  register: gotTarball
+  ignore_errors: yes
+
+- fail:
+    msg: Can not download {{ java_urls[getjava].name }}
+  when: gotTarball.failed
+
+- name: Check Java base directory exists
+  tags:
+    - debug
+  become: true
+  file:
+    path: "{{ java_basedir }}"
+    state: directory
+  when: not gotTarball.failed
+
+- name: Unarchive JDK tarball
+  become: true
+  tags:
+    - debug
+  unarchive:
+    src: /tmp/{{ java_urls[getjava].name }}-linux-x64.tar.gz
+    dest: "{{ java_basedir }}"
+    remote_src: yes
+  when: not gotTarball.failed
+
+#    - name: Read environment
+#      command: cat /etc/environment
+#      register: gotPath
+  
+#    - name: Add Java to PATH
+#      become: true
+#      shell: echo "PATH=$PATH:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/bin:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/db/bin:/usr/lib/jvm/{{ java_urls['jdk-8u201'].basedir }}/jre/bin" > /etc/environment
+#      when: gotPath.stdout.find(java_urls['jdk-8u201'].basedir) != -1
+
+- name: Add Java alternatives
+  become: true    
+  alternatives:
+    name: "{{ item }}"
+    link: "/usr/bin/{{ item }}"
+    path: "{{ java_basedir }}/{{ java_urls[getjava].basedir | default(java_urls[getjava].name) }}/bin/{{ item }}"
+  loop:
+    - 'java'
+    - 'javac'
+    - 'jar'
+  when: not gotTarball.failed
+
+- name: Get current Java version
+  shell: java -version 2>&1 | awk -F '"' '/version/ {print $2}'
+  changed_when: false
+  register: javaVersion
+  when: not gotTarball.failed
+
+- name: Output current Java verion
+  debug: 
+    msg: "Installed Java verion : {{ javaVersion.stdout }}"
+  when: not gotTarball.failed    

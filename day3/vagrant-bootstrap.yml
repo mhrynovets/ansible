@@ -4,8 +4,14 @@
   hosts: all
   gather_facts: no
   tasks:
-  - name: Check existing of vars file
+  - name: Check existing of host_vars directory
     delegate_to: localhost  
+    file:
+      path: host_vars
+      state: directory
+
+  - name: Check existing of vars file
+    delegate_to: localhost    
     copy:
       content: ""
       dest: host_vars/{{ inventory_hostname }}.yml

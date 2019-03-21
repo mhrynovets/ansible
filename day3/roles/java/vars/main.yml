@@ -1,9 +1,16 @@
 ---
 # file: main.yml (vars-java-roles)
 
+# here are all accessible Oracle Java versions. 
+#   more versions can be defined manualy in
+#   role defaults directory
+
 # uncomment below to set another package or version
+# tha last uncommented version will be set af default
 java_packages:
-  - openjdk-8-jdk
+  - jdk-12
+#  - jdk-111
+  - jdk-8u201
 
 # uncomment below to define JAVA_HOME
 #java_home: ""
